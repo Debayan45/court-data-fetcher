@@ -10,21 +10,19 @@
         <p style="color:red;">{{ error }}</p>
     {% endif %}
 
-    <form method="POST">
-        <label>Case Type:</label>
-        <select name="case_type" required>
-            <option value="C">Civil</option>
-            <option value="CR">Criminal</option>
-        </select><br><br>
+<form method="POST">
+  <label>Case Type:</label>
+  <input type="text" name="case_type" placeholder="e.g. CS" required>
 
-        <label>Case Number:</label>
-        <input type="number" name="case_number" required><br><br>
+  <label>Case Number:</label>
+  <input type="text" name="case_number" placeholder="e.g. 123" required>
 
-        <label>Filing Year:</label>
-        <input type="number" name="year" required><br><br>
+  <label>Year:</label>
+  <input type="text" name="year" placeholder="e.g. 2023" required>
 
-        <button type="submit">Fetch Case</button>
-    </form>
+  <button type="submit">Search Case</button>
+</form>
+
 
     {% if data %}
         <h2>Case Details</h2>
@@ -36,3 +34,4 @@
     {% endif %}
 </body>
 </html>
+
