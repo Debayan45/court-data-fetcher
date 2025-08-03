@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Court Data Fetcher</title>
+</head>
+<body>
+    <h1>Court Data Fetcher</h1>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label>Case Type:</label>
+        <select name="case_type" required>
+            <option value="C">Civil</option>
+            <option value="CR">Criminal</option>
+        </select><br><br>
+
+        <label>Case Number:</label>
+        <input type="number" name="case_number" required><br><br>
+
+        <label>Filing Year:</label>
+        <input type="number" name="year" required><br><br>
+
+        <button type="submit">Fetch Case</button>
+    </form>
+
+    {% if data %}
+        <h2>Case Details</h2>
+        <p><strong>Case:</strong> {{ data.case_title }}</p>
+        <p><strong>Parties:</strong> {{ data.parties }}</p>
+        <p><strong>Filing Date:</strong> {{ data.filing_date }}</p>
+        <p><strong>Next Hearing:</strong> {{ data.next_hearing }}</p>
+        <p><a href="{{ data.latest_order_link }}" target="_blank">Download Latest Order</a></p>
+    {% endif %}
+</body>
+</html>
