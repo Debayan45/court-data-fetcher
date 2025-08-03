@@ -1,47 +1,52 @@
-from selenium.webdriver.support.ui import Select
+from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.options import Options
+import time
 
-def scrape_court_data(state, district, court_complex, case_type, case_number, year):
+def fetch_case_data(case_type, case_number, year):
     options = Options()
-    options.headless = True
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options.add_experimental_option("detach", True)  # Keep browser open
+
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://services.ecourts.gov.in/ecourtindia_v6/?p=casestatus/index&state=D&dist=9")
 
     try:
-        driver.get("https://services.ecourts.gov.in/ecourtindia_v6/?p=casestatus/index")
-        wait = WebDriverWait(driver, 20)
+        # Wait for page to load
+        time.sleep(3)
 
-        # Select State
-        state_dropdown = wait.until(EC.presence_of_element_located((By.ID, "sess_state_code")))
-        Select(state_dropdown).select_by_visible_text(state)
-
-        # Select District
-        wait.until(EC.presence_of_element_located((By.ID, "sess_dist_code")))
-        Select(driver.find_element(By.ID, "sess_dist_code")).select_by_visible_text(district)
-
-        # Select Court Complex
-        wait.until(EC.presence_of_element_located((By.ID, "court_complex_code")))
-        Select(driver.find_element(By.ID, "court_complex_code")).select_by_visible_text(court_complex)
-
-        # Click on Case Number tab
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Case Number')]").click()
-
-        # Fill Case Type, Case Number, Year
+        # Select case type
         Select(driver.find_element(By.ID, "case_type")).select_by_visible_text(case_type)
+
+        # Fill in case number and year
         driver.find_element(By.ID, "case_no").send_keys(case_number)
-        Select(driver.find_element(By.ID, "case_year")).select_by_visible_text(str(year))
+        driver.find_element(By.ID, "case_year").send_keys(year)
 
-        # Submit
-        driver.find_element(By.ID, "searchbtn").click()
+        print("👉 Please solve the CAPTCHA manually in the opened browser.")
+        input("✅ Press ENTER here *after* submitting the form manually...")
 
-        # Wait and parse result
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "case_status_main")))
-        result = driver.find_element(By.CLASS_NAME, "case_status_main").text
+        time.sleep(5)  # Allow time for page to load
 
-        return {"success": True, "result": result}
+        # Now extract data
+        parties = driver.find_element(By.ID, "petresp").text.strip() if driver.find_elements(By.ID, "petresp") else "N/A"
+        filing_date = driver.find_element(By.ID, "fdate").text.strip() if driver.find_elements(By.ID, "fdate") else "N/A"
+        next_hearing = driver.find_element(By.ID, "nhearing").text.strip() if driver.find_elements(By.ID, "nhearing") else "N/A"
+
+        # Order link
+        link_element = driver.find_elements(By.LINK_TEXT, "View")
+        latest_order_link = link_element[0].get_attribute("href") if link_element else "#"
+
+        driver.quit()
+
+        return {
+            'case_title': f'{case_type}/{case_number}/{year}',
+            'parties': parties,
+            'filing_date': filing_date,
+            'next_hearing': next_hearing,
+            'latest_order_link': latest_order_link,
+            'raw_html': "(Selenium handled, not raw HTML)"
+        }
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
-    finally:
         driver.quit()
+        raise Exception(f"Selenium scraping failed: {str(e)}")
