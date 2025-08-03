@@ -6,9 +6,11 @@ from selenium.common.exceptions import TimeoutException
 import time
 
 def fetch_case_data(case_type, case_number, year):
-    # Set up headless Chrome browser
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
+    options.add_argument("--headless")  # Comment this line for visual debugging
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
     driver = webdriver.Chrome(options=options)
 
     try:
@@ -17,41 +19,16 @@ def fetch_case_data(case_type, case_number, year):
         wait = WebDriverWait(driver, 10)
 
         # Select case type
-        Select(wait.until(EC.presence_of_element_located((By.NAME, "case_type")))).select_by_visible_text(case_type)
+        case_type_dropdown = wait.until(EC.presence_of_element_located((By.NAME, "case_type")))
+        Select(case_type_dropdown).select_by_visible_text(case_type)
 
-        # Fill in case number and year
+        # Enter case number
+        driver.find_element(By.NAME, "case_no").clear()
         driver.find_element(By.NAME, "case_no").send_keys(case_number)
+
+        # Enter case year
+        driver.find_element(By.NAME, "case_year").clear()
         driver.find_element(By.NAME, "case_year").send_keys(year)
 
-        # Submit form
-        driver.find_element(By.NAME, "submit").click()
-
-        # Wait for result to load
-        wait.until(EC.presence_of_element_located((By.ID, "petresp")))
-
-        parties = driver.find_element(By.ID, "petresp").text.strip()
-        filing_date = driver.find_element(By.ID, "fdate").text.strip()
-        next_hearing = driver.find_element(By.ID, "nhearing").text.strip()
-
-        # Find link to latest order
-        try:
-            link = driver.find_element(By.LINK_TEXT, "View")
-            latest_order_link = "https://services.ecourts.gov.in" + link.get_attribute('href')
-        except:
-            latest_order_link = "#"
-
-        raw_html = driver.page_source
-
-        return {
-            'case_title': f'{case_type}/{case_number}/{year}',
-            'parties': parties,
-            'filing_date': filing_date,
-            'next_hearing': next_hearing,
-            'latest_order_link': latest_order_link,
-            'raw_html': raw_html
-        }
-
-    except TimeoutException:
-        raise Exception("Timeout while loading court data.")
-    finally:
-        driver.quit()
+        # Submit the form
+        driver.find_elem_
