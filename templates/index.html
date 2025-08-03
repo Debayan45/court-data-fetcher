@@ -1,37 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Court Data Fetcher</title>
+    <title>Court Case Scraper</title>
 </head>
 <body>
-    <h1>Court Data Fetcher</h1>
+    <h1>Enter Case Details</h1>
+    <form method="POST">
+        <label>State:</label>
+        <input name="state" required><br>
 
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
+        <label>District:</label>
+        <input name="district" required><br>
 
-<form method="POST">
-  <label>Case Type:</label>
-  <input type="text" name="case_type" placeholder="e.g. CS" required>
+        <label>Court:</label>
+        <input name="court" required><br>
 
-  <label>Case Number:</label>
-  <input type="text" name="case_number" placeholder="e.g. 123" required>
+        <label>Case Type:</label>
+        <input name="case_type" required><br>
 
-  <label>Year:</label>
-  <input type="text" name="year" placeholder="e.g. 2023" required>
+        <label>Case Number:</label>
+        <input name="case_number" required><br>
 
-  <button type="submit">Search Case</button>
-</form>
+        <label>Year:</label>
+        <input name="year" required><br>
 
+        <button type="submit">Fetch</button>
+    </form>
 
     {% if data %}
         <h2>Case Details</h2>
-        <p><strong>Case:</strong> {{ data.case_title }}</p>
+        <p><strong>Title:</strong> {{ data.case_title }}</p>
         <p><strong>Parties:</strong> {{ data.parties }}</p>
         <p><strong>Filing Date:</strong> {{ data.filing_date }}</p>
         <p><strong>Next Hearing:</strong> {{ data.next_hearing }}</p>
-        <p><a href="{{ data.latest_order_link }}" target="_blank">Download Latest Order</a></p>
+        <p><strong>Latest Order:</strong> <a href="{{ data.latest_order_link }}" target="_blank">Download</a></p>
     {% endif %}
 </body>
 </html>
-
